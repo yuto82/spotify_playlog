@@ -1,8 +1,6 @@
 import base64
 import requests
 import webbrowser
-from config import Config
-from dotenv import find_dotenv
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -21,12 +19,12 @@ class CallBackHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"<h1>Error: No code received.</h1>")
 
-def spotify_authorize():
+def spotify_authorize(client_id, redirect_uri):
     webbrowser.open(
         f"https://accounts.spotify.com/authorize"
-        f"?client_id={Config.CLIENT_ID}"
+        f"?client_id={client_id}"
         f"&response_type=code"
-        f"&redirect_uri={Config.REDIRECT_URI}"
+        f"&redirect_uri={redirect_uri}"
         f"&scope=user-read-recently-played"
     )
 
@@ -35,10 +33,10 @@ def spotify_authorize():
     server.handle_request()
     return server.authorization_code
 
-def access_token(code):
+def get_access_token(client_id, client_secret,code, redirect_uri):
     token_url = "https://accounts.spotify.com/api/token"
 
-    auth_header = base64.b64encode(f"{Config.CLIENT_ID}:{Config.CLIENT_SECRET}".encode()).decode()
+    auth_header = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
     headers = {
         "Authorization": f"Basic {auth_header}",
         "Content-Type": "application/x-www-form-urlencoded"
@@ -47,7 +45,7 @@ def access_token(code):
     data = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": Config.REDIRECT_URI
+        "redirect_uri": redirect_uri
     }
 
     response = requests.post(token_url, data=data, headers=headers)
