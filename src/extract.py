@@ -22,7 +22,7 @@ def main():
     response.raise_for_status()
     spotify_data = response.json()
 
-    spotify_data_file = Path(__file__).parent.parent / "data" / "data.json"
+    spotify_data_file = Path(__file__).parent / "tmp" / "data.json"
 
     with open(spotify_data_file, "w") as file:
             json.dump(spotify_data, file, indent=4)

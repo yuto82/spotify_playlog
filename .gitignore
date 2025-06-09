@@ -10,3 +10,5 @@ dist/
 *.tmp
 *.temp
 *.cfg
+data.json
+refresh_token.json
