@@ -14,6 +14,6 @@ def spotify_auth_url(client_id: str, redirect_uri: str, scope: str):
     webbrowser.open(url)
 
 if __name__ == "__main__":
-    spotify_auth_url(Config.CLIENT_ID, 
-                     Config.REDIRECT_URI, 
+    spotify_auth_url(Config.CLIENT_ID,
+                     Config.REDIRECT_URI,
                      Config.SCOPE)

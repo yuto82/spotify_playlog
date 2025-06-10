@@ -10,5 +10,4 @@ dist/
 *.tmp
 *.temp
 *.cfg
-spotify_data.json
 refresh_token.json

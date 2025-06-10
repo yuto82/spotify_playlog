@@ -3,8 +3,8 @@ import json
 import requests
 from pathlib import Path
 
-def refresh_access_token(client_id, client_secret):
-    token_path = Path(__file__).parent.parent / "tmp" / "refresh_token.json"
+def refresh_access_token(client_id: str, client_secret: str):
+    token_path = Path(__file__).parent.parent.parent / "tmp" / "refresh_token.json"
     with open(token_path) as f:
         refresh_token = json.load(f)["refresh_token"]
 

@@ -26,13 +26,13 @@ def get_refresh_token(client_id: str, client_secret: str, redirect_uri: str, aut
 
     refresh_token = tokens.get("refresh_token")
 
-    token_path = Path(__file__).parent / "tmp" / "refresh_token.json"
+    token_path = Path(__file__).parent.parent.parent / "tmp" / "refresh_token.json"
     token_path.parent.mkdir(parents=True, exist_ok=True)
     with open(token_path, "w") as f:
         json.dump({"refresh_token": refresh_token}, f)
 
 if __name__ == "__main__":
     get_refresh_token(client_id = Config.CLIENT_ID, 
-               client_secret = Config.CLIENT_SECRET, 
-               redirect_uri = Config.REDIRECT_URI, 
-               auth_code = Config.AUTH_CODE)
+                      client_secret = Config.CLIENT_SECRET, 
+                      redirect_uri = Config.REDIRECT_URI, 
+                      auth_code = Config.AUTH_CODE)
