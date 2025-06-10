@@ -9,3 +9,4 @@ class Config:
     CLIENT_SECRET = os.getenv("CLIENT_SECRET")
     REDIRECT_URI = os.getenv("REDIRECT_URI")
     SCOPE = os.getenv("SCOPE")
+    AUTH_CODE = os.getenv("AUTH_CODE")
