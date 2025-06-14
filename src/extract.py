@@ -1,20 +1,29 @@
 import json
 import requests
 from pathlib import Path
+from datetime import datetime, timedelta
 from components.settings.config import Config
 from components.access_token import refresh_access_token
 
-def extract(client_id: str, client_secret: str):
+def extract(client_id: str, client_secret: str, timezone: str):
     refreshed_access_token = refresh_access_token(client_id, client_secret)
     
     headers = {
         "Authorization": f"Bearer {refreshed_access_token}"
     }
-    url = "https://api.spotify.com/v1/me/player/recently-played?limit=50"
+
+    yesterday_timestamp = datetime.now(timezone) - timedelta(days=1)
+    yesterday_unix_timestamp = int(yesterday_timestamp.timestamp()) * 1000
+
+    url = f"https://api.spotify.com/v1/me/player/recently-played?limit=50&after={yesterday_unix_timestamp}"
 
     response = requests.get(url, headers=headers)
     response.raise_for_status()
-    spotify_data = response.json()
+
+    if response.status_code == 200:
+        spotify_data = response.json()
+    else:
+        print(f'Failed to get recently played tracks. Response: {response.json()}')
 
     spotify_data_file = Path(__file__).parent.parent / "tmp" / "data" / "spotify_data.json"
 
@@ -23,4 +32,5 @@ def extract(client_id: str, client_secret: str):
 
 if __name__ == "__main__":
     extract(Config.CLIENT_ID,
-            Config.CLIENT_SECRET)
+            Config.CLIENT_SECRET,
+            Config.CET)

@@ -1,4 +1,5 @@
 import os
+import pytz
 from dotenv import load_dotenv, find_dotenv
 
 path_dotenv = find_dotenv()
@@ -10,3 +11,5 @@ class Config:
     REDIRECT_URI = os.getenv("REDIRECT_URI")
     SCOPE = os.getenv("SCOPE")
     AUTH_CODE = os.getenv("AUTH_CODE")
+
+    CET = pytz.timezone("Europe/Warsaw")
