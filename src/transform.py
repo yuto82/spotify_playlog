@@ -44,6 +44,5 @@ def transform_data():
     output_path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_transformed.csv"
     df.to_csv(output_path, index=False)
 
-
-
-transform_data()
+if __name__ == "__main__":
+    transform_data()
