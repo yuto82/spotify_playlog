@@ -2,35 +2,25 @@ import json
 import pandas as pd
 from pathlib import Path
 
-def transform_data() -> None:
-    file_path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_data.json"
+def parse_track(item: dict) -> dict:
+    track = item.get("track", {})
+    album = track.get("album", {})
+    artist = album.get("artists", [{}])[0]
 
-    if not file_path.exists():
-        raise FileNotFoundError(f"Input file not found: {file_path}")
+    return {
+        "artist_name": artist.get("name"),
+        "artist_id": artist.get("id"),
+        "song_name": track.get("name"),
+        "track_id": track.get("id"),
+        "duration_ms": track.get("duration_ms"),
+        "track_popularity": track.get("popularity"),
+        "played_at": item.get("played_at")
+    }
 
-    with open(file_path, "r") as file:
-        data = json.load(file)
+def transform_track(items: list[dict]) -> pd.DataFrame:
+    rows = [parse_track(item) for item in items]
+    df = pd.DataFrame(rows)
 
-    items = data.get("items", [])
-
-    transformed_data = []
-
-    for item in items:
-        track = item.get("track", {})
-        album = track.get("album", {})
-        artist = album.get("artists", [{}])[0]
-
-        transformed_data.append({
-            "artist_name": artist.get("name"),
-            "artist_id": artist.get("id"),
-            "song_name": track.get("name"),
-            "track_id": track.get("id"),
-            "duration_ms": track.get("duration_ms"),
-            "track_popularity": track.get("popularity"),
-            "played_at": item.get("played_at")
-        })
-            
-    df = pd.DataFrame(transformed_data)
     df = df[["artist_name", "artist_id", "song_name", "track_id", "duration_ms", "track_popularity", "played_at"]]
     df.columns = ["artist_name", "artist_id", "song_name", "track_id", "duration", "popularity", "played_at"]
 
@@ -40,12 +30,26 @@ def transform_data() -> None:
     df["duration"] = pd.to_numeric(df["duration"], errors="coerce")
     df["duration"] = df["duration"].apply(
         lambda ms: f"{int(ms // 60000)}:{int((ms % 60000) // 1000):02}" if pd.notnull(ms) else None
-        )
+    )
 
     df = df.drop_duplicates(subset="track_id", keep="first")
 
-    output_path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_transformed.csv"
-    df.to_csv(output_path, index=False)
+    return df
+
+def transform() -> None:
+    raw_data_path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_data.json"
+    transformed_data_path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_transformed.csv"
+
+    if not raw_data_path.exists():
+        raise FileNotFoundError(f"Input file not found: {raw_data_path}")
+
+    with open(raw_data_path, "r") as file:
+        data = json.load(file)
+
+    items = data.get("items", [])
+
+    df = transform_track(items)
+    df.to_csv(transformed_data_path, index=False)
 
 if __name__ == "__main__":
-    transform_data()
+    transform()

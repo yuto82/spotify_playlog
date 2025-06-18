@@ -12,7 +12,6 @@ default_args = {
     'start_date': datetime(2024, 5, 29),
     'retries': 1,
     'retry_delay': timedelta(minutes=60),
-
 }
 with DAG(
     'spotify_dag',
@@ -35,5 +34,4 @@ with DAG(
         python_callable = get_recently_played_tracks
     )
 
-# Dependancies 
 exchange >> refresh >> get_songs
