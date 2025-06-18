@@ -1,18 +1,39 @@
-from airflow import DAG
 from datetime import datetime
-from airflow.operators.python import PythonOperator
+from datetime import timedelta
+from airflow import DAG
+from airflow.models import Variable
+from airflow.hooks.base_hook import BaseHook    
+from airflow.hooks.mysql_hook import MySqlHook
+from airflow.operators.python_operator import PythonOperator
 
-def say_hello():
-    print("Hello Airflow")
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2024, 5, 29),
+    'retries': 1,
+    'retry_delay': timedelta(minutes=60),
 
+}
 with DAG(
-    dag_id="example_hello_dag2",
-    start_date=datetime(2023, 1, 1),
-    schedule="@daily",  # запуск каждый день
-    catchup=False
-) as dag:
+    'spotify_dag',
+    default_args=default_args,
+    schedule_interval='10 4 * * *',  # This DAG will run at 10 min past mindnight (12:10)EST, The rason I have build 4:10 because my airflow follows UTC timestamp
+):
 
-    hello_task = PythonOperator(
-        task_id="say_hello_task",
-        python_callable=say_hello
+    exchange = PythonOperator(
+        task_id = 'exchange_token',
+        python_callable = exchange_token
     )
+
+    refresh = PythonOperator(
+        task_id = 'refresh_token',
+        python_callable = refresh_token
+    )
+
+    get_songs = PythonOperator(
+        task_id= 'get_songs',
+        python_callable = get_recently_played_tracks
+    )
+
+# Dependancies 
+exchange >> refresh >> get_songs
