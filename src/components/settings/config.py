@@ -13,3 +13,5 @@ class Config:
     AUTH_CODE = os.getenv("AUTH_CODE")
 
     CET = pytz.timezone("Europe/Warsaw")
+
+    DATABASE_URL = os.getenv("DATABASE_URL")

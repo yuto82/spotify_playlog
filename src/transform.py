@@ -2,8 +2,11 @@ import json
 import pandas as pd
 from pathlib import Path
 
-def transform_data():
+def transform_data() -> None:
     file_path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_data.json"
+
+    if not file_path.exists():
+        raise FileNotFoundError(f"Input file not found: {file_path}")
 
     with open(file_path, "r") as file:
         data = json.load(file)
