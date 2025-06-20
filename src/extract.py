@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from components.settings.config import Config
 from components.access_token import refresh_access_token
 
-def get_recently_played_tracks(access_token: str, yesterday_unix_timestamp: str) -> Dict[str, any]: 
+def get_recently_played_tracks(access_token: str, yesterday_unix_timestamp: str) -> Dict[str, any]:
     url = f"https://api.spotify.com/v1/me/player/recently-played?limit=50&after={yesterday_unix_timestamp}"
 
     headers = {
@@ -17,34 +17,24 @@ def get_recently_played_tracks(access_token: str, yesterday_unix_timestamp: str)
     response.raise_for_status()
     return response.json()
 
+def save_recently_played_tracks(data: Dict[str, Any], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
 
+    with path.open("w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4)
 
-# def extract(client_id: str, client_secret: str, timezone: str):
-#     refreshed_access_token = refresh_access_token(client_id, client_secret)
+def extract_recently_played_tracks(client_id: str, client_secret: str, timezone: str) -> None:
+    access_token: str = refresh_access_token(client_id, client_secret)
+
+    yesterday: datetime = datetime.now(timezone) - timedelta(days=1)
+    yesterday_unix_timestamp: int = int(yesterday.timestamp()) * 1000
     
-#     headers = {
-#         "Authorization": f"Bearer {refreshed_access_token}"
-#     }
+    spotify_data: Dict[str, Any] = get_recently_played_tracks(access_token, yesterday_unix_timestamp)
 
-#     yesterday_timestamp = datetime.now(timezone) - timedelta(days=1)
-#     yesterday_unix_timestamp = int(yesterday_timestamp.timestamp()) * 1000
+    output_path: Path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_data.json"
+    save_recently_played_tracks(spotify_data, output_path)
 
-#     url = f"https://api.spotify.com/v1/me/player/recently-played?limit=50&after={yesterday_unix_timestamp}"
-
-#     response = requests.get(url, headers=headers)
-#     response.raise_for_status()
-
-#     if response.status_code == 200:
-#         spotify_data = response.json()
-#     else:
-#         print(f'Failed to get recently played tracks. Response: {response.json()}')
-
-#     spotify_data_file = Path(__file__).parent.parent / "tmp" / "data" / "spotify_data.json"
-
-#     with open(spotify_data_file, "w") as file:
-#             json.dump(spotify_data, file, indent=4)
-
-# if __name__ == "__main__":
-#     extract(Config.CLIENT_ID,
-#             Config.CLIENT_SECRET,
-#             Config.CET)
+if __name__ == "__main__":
+    extract_recently_played_tracks(Config.CLIENT_ID,
+                                   Config.CLIENT_SECRET,
+                                   Config.CET)
