@@ -3,8 +3,8 @@ import requests
 from pathlib import Path
 from typing import Dict, Any
 from datetime import datetime, timedelta
-from components.settings.config import Config
-from components.access_token import refresh_access_token
+from authentication.settings.config import Config
+from authentication.access_token import refresh_access_token
 
 def get_recently_played_tracks(access_token: str, yesterday_unix_timestamp: str) -> Dict[str, any]:
     url = f"https://api.spotify.com/v1/me/player/recently-played?limit=50&after={yesterday_unix_timestamp}"
@@ -15,6 +15,7 @@ def get_recently_played_tracks(access_token: str, yesterday_unix_timestamp: str)
 
     response = requests.get(url, headers=headers)
     response.raise_for_status()
+    
     return response.json()
 
 def save_recently_played_tracks(data: Dict[str, Any], path: Path) -> None:
@@ -28,7 +29,7 @@ def extract_recently_played_tracks(client_id: str, client_secret: str, timezone:
 
     yesterday: datetime = datetime.now(timezone) - timedelta(days=1)
     yesterday_unix_timestamp: int = int(yesterday.timestamp()) * 1000
-    
+
     spotify_data: Dict[str, Any] = get_recently_played_tracks(access_token, yesterday_unix_timestamp)
 
     output_path: Path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_data.json"
