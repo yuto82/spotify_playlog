@@ -19,5 +19,3 @@ class Config:
 
     BASE_DIR = Path(__file__).resolve().parent.parent
     TRANSFORMED_SPOTIFY_CSV_PATH = BASE_DIR / "tmp" / "data" / "spotify_transformed.csv"
-
-print(Config.TRANSFORMED_SPOTIFY_CSV_PATH)
