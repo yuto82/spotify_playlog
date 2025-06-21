@@ -2,8 +2,8 @@ import sys
 import pandas as pd
 from typing import Union
 from pathlib import Path
-from sqlalchemy import create_engine, text, Engine
 from settings.config import Config
+from sqlalchemy import create_engine, text, Engine
 
 def get_database_engine() -> Engine:
     try:
@@ -18,9 +18,9 @@ def get_database_engine() -> Engine:
         print(f"Failed to create database engine: {e}")
         sys.exit(1)
 
-def load_csv_to_table(csv_path: Union[str, Path], table_name: str, engine: Engine) -> None:
+def load_csv_to_table(data_path: Union[str, Path], table_name: str, engine: Engine) -> None:
     try:
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv(data_path)
         df.to_sql(table_name, engine, if_exists='replace', index=False)
         print(f"Data successfully loaded into table '{table_name}'.")
     except Exception as e:
@@ -28,10 +28,10 @@ def load_csv_to_table(csv_path: Union[str, Path], table_name: str, engine: Engin
         sys.exit(1)
 
 def main() -> None:
-    file = Path(__file__).parent.parent / "tmp" / "data" / "spotify_transformed.csv"
+    data_path = Config.TRANSFORMED_SPOTIFY_CSV_PATH
     table_name = "spotify_playlog"
     engine = get_database_engine()
-    load_csv_to_table(file, table_name, engine)
+    load_csv_to_table(data_path, table_name, engine)
 
 if __name__ == "__main__":
     main()

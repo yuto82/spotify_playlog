@@ -3,7 +3,7 @@ import requests
 from pathlib import Path
 from typing import Dict, Any
 from datetime import datetime, timedelta
-from authentication.settings.config import Config
+from settings.config import Config
 from authentication.access_token import refresh_access_token
 
 def get_recently_played_tracks(access_token: str, yesterday_unix_timestamp: str) -> Dict[str, any]:
@@ -27,12 +27,13 @@ def save_recently_played_tracks(data: Dict[str, Any], path: Path) -> None:
 def extract_recently_played_tracks(client_id: str, client_secret: str, timezone: str) -> None:
     access_token: str = refresh_access_token(client_id, client_secret)
 
-    yesterday: datetime = datetime.now(timezone) - timedelta(days=1)
+    yesterday = datetime.now(timezone) - timedelta(days=1)
     yesterday_unix_timestamp: int = int(yesterday.timestamp()) * 1000
 
     spotify_data: Dict[str, Any] = get_recently_played_tracks(access_token, yesterday_unix_timestamp)
 
-    output_path: Path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_data.json"
+    output_path = Path(__file__).parent.parent / "data" / "spotify_raw_data.json"
+
     save_recently_played_tracks(spotify_data, output_path)
 
 if __name__ == "__main__":

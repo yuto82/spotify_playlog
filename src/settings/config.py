@@ -16,6 +16,11 @@ class Config:
     CET = pytz.timezone("Europe/Warsaw")
 
     DATABASE_URL = os.getenv("DATABASE_URL")
+    
+    SRC_DIR = Path(__file__).resolve().parent.parent
 
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    TRANSFORMED_SPOTIFY_CSV_PATH = BASE_DIR / "tmp" / "data" / "spotify_transformed.csv"
+    SPOTIFY_TRANSFORMED_DATA_PATH = SRC_DIR / "data" / "spotify_transformed_data.csv"
+    SPOTIFY_RAW_DATA = SRC_DIR / "data" / "spotify_raw_data.csv"
+
+    
+    

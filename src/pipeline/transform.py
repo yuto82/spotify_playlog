@@ -37,8 +37,8 @@ def transform_track(items: list[dict]) -> pd.DataFrame:
     return df
 
 def transform() -> None:
-    raw_data_path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_data.json"
-    transformed_data_path = Path(__file__).parent.parent / "tmp" / "data" / "spotify_transformed.csv"
+    raw_data_path = Path(__file__).parent.parent /  "data" / "spotify_raw_data.json"
+    transformed_data_path = Path(__file__).parent.parent / "data" / "spotify_transformed_data.csv"
 
     if not raw_data_path.exists():
         raise FileNotFoundError(f"Input file not found: {raw_data_path}")

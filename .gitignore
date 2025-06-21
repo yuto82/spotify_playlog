@@ -11,4 +11,4 @@ dist/
 *.temp
 *.cfg
 refresh_token.json
-spotify_playlog.egg-info/
+*.egg-info/
