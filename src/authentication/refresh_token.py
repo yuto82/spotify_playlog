@@ -4,7 +4,7 @@ import requests
 from pathlib import Path
 from settings.config import Config
 
-def get_refresh_token(client_id: str, client_secret: str, redirect_uri: str, auth_code: str):
+def get_refresh_token(client_id: str, client_secret: str, redirect_uri: str, auth_code: str) -> None:
     url = "https://accounts.spotify.com/api/token"
     auth_header = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
 
