@@ -19,6 +19,8 @@ class Config:
     
     SRC_DIR = Path(__file__).resolve().parent.parent
 
+    REFRESH_TOKEN_PATH = SRC_DIR / "data" / "token" / "refresh_token.json"
+
     SPOTIFY_TRANSFORMED_DATA_PATH = SRC_DIR / "data" / "spotify_transformed_data.csv"
     SPOTIFY_RAW_DATA = SRC_DIR / "data" / "spotify_raw_data.csv"
 
