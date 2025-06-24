@@ -7,10 +7,33 @@ from settings.config import Config
 
 @dataclass
 class TokenRequestPayload:
+    """
+    Payload containing headers and data for the Spotify token request.
+    """
     headers: dict[str, str]
     data: dict[str, str]
 
+@dataclass
+class AuthResponse:
+    """
+    Data structure representing access and refresh tokens returned from Spotify.
+    """
+    access_token: str
+    refresh_token: str
+
 def build_token_request_payload(client_id: str, client_secret: str, auth_code: str, redirect_uri: str) -> TokenRequestPayload:
+    """
+    Build the payload required to request tokens from the Spotify API.
+
+    Args:
+        client_id (str): Spotify application's client ID.
+        client_secret (str): Spotify application's client secret.
+        auth_code (str): Authorization code obtained from the OAuth process.
+        redirect_uri (str): Redirect URI used during the authorization.
+
+    Returns:
+        TokenRequestPayload: Object containing headers and form data for the request.
+    """
     auth_header = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
 
     headers: dict[str, str] = {
@@ -26,7 +49,20 @@ def build_token_request_payload(client_id: str, client_secret: str, auth_code: s
     
     return TokenRequestPayload(headers = headers, data = data)
 
-def get_refresh_token(payload: TokenRequestPayload) -> tuple[str, str]:
+def get_refresh_token(payload: TokenRequestPayload) -> AuthResponse:
+    """
+    Send a request to Spotify to exchange the authorization code for tokens.
+
+    Args:
+        payload (TokenRequestPayload): Headers and data required for the token request.
+
+    Returns:
+        AuthResponse: Object containing access and refresh tokens.
+
+    Raises:
+        RuntimeError: If the request fails or the response cannot be parsed.
+        ValueError: If no refresh token is found in the response.
+    """
     url = "https://accounts.spotify.com/api/token"
 
     try:
@@ -41,9 +77,19 @@ def get_refresh_token(payload: TokenRequestPayload) -> tuple[str, str]:
     if not refresh_token:
         raise ValueError("No refresh token found in the response from Spotify.")
 
-    return(access_token, refresh_token)
+    return AuthResponse(access_token = access_token, refresh_token = refresh_token)
 
 def save_refresh_token(refresh_token: str, token_path: Path) -> None:
+    """
+    Save the refresh token to a JSON file at the specified path.
+
+    Args:
+        refresh_token (str): The refresh token to save.
+        token_path (Path): The file path where the token will be saved.
+
+    Raises:
+        RuntimeError: If the file cannot be written to.
+    """
     try:
         token_path.parent.mkdir(parents=True, exist_ok=True)
         with open(token_path, "w", encoding="utf-8") as file:
@@ -58,5 +104,5 @@ if __name__ == "__main__":
                                                                auth_code = Config.AUTH_CODE, 
                                                                redirect_uri = Config.REDIRECT_URI)
 
-    access_token, refresh_token = get_refresh_token(payload)
-    save_refresh_token(refresh_token, token_path = Config.REFRESH_TOKEN_PATH)
+    tokens: AuthResponse = get_refresh_token(payload)
+    save_refresh_token(tokens.refresh_token, Config.REFRESH_TOKEN_PATH)
