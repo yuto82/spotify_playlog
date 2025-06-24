@@ -24,7 +24,7 @@ def build_authentication_url(client_id: str, redirect_uri: str, scope: str) -> s
     return (f"https://accounts.spotify.com/authorize?{query}")
 
 
-def open_authentication_url(url: str) -> None:
+def open_authentication_url(url: str) -> str:
     """
     Opens given URL in the default web browser.
 
@@ -32,6 +32,8 @@ def open_authentication_url(url: str) -> None:
         url (str): The URL to be opened.
     """
     webbrowser.open(url)
+
+    return(url)
 
 if __name__ == "__main__":
     url: str = build_authentication_url(Config.CLIENT_ID, Config.REDIRECT_URI, Config.SCOPE)
