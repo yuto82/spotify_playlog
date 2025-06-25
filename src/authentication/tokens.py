@@ -21,7 +21,7 @@ class AuthResponse:
     access_token: str
     refresh_token: str
 
-def build_token_request_payload(client_id: str, client_secret: str, auth_code: str, redirect_uri: str) -> TokenRequestPayload:
+def build_tokens_request_payload(client_id: str, client_secret: str, auth_code: str, redirect_uri: str) -> TokenRequestPayload:
     """
     Build the payload required to request tokens from the Spotify API.
 
@@ -99,10 +99,10 @@ def save_refresh_token(refresh_token: str, token_path: Path) -> None:
         raise RuntimeError(f"Failed to save refresh token to {token_path}") from error
 
 if __name__ == "__main__":
-    payload: TokenRequestPayload = build_token_request_payload(client_id = Config.CLIENT_ID, 
-                                                               client_secret = Config.CLIENT_SECRET, 
-                                                               auth_code = Config.AUTH_CODE, 
-                                                               redirect_uri = Config.REDIRECT_URI)
+    payload: TokenRequestPayload = build_tokens_request_payload(client_id = Config.CLIENT_ID,
+                                                                client_secret = Config.CLIENT_SECRET,
+                                                                auth_code = Config.AUTH_CODE,
+                                                                redirect_uri = Config.REDIRECT_URI)
 
     tokens: AuthResponse = get_refresh_token(payload)
     save_refresh_token(tokens.refresh_token, Config.REFRESH_TOKEN_PATH)
