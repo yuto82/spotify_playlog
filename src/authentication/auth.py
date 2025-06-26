@@ -21,8 +21,7 @@ def build_authentication_url(client_id: str, redirect_uri: str, scope: str) -> s
         "scope": scope
     })
 
-    return (f"https://accounts.spotify.com/authorize?{query}")
-
+    return f"https://accounts.spotify.com/authorize?{query}"
 
 def open_authentication_url(url: str) -> str:
     """
@@ -33,7 +32,7 @@ def open_authentication_url(url: str) -> str:
     """
     webbrowser.open(url)
 
-    return(url)
+    return url
 
 if __name__ == "__main__":
     url: str = build_authentication_url(Config.CLIENT_ID, Config.REDIRECT_URI, Config.SCOPE)
