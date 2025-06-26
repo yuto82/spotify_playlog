@@ -163,7 +163,6 @@ if __name__ == "__main__":
                                                                      Config.CLIENT_SECRET,
                                                                      refresh_token)
     new_access_token: str = refresh_access_token(token_payload)
-
     data_payload: DataRequestPayload = build_data_request_payload(new_access_token)
     spotify_data: Dict[str, Any] = get_recently_played_tracks(Config.unix_timestamp(), data_payload)
 

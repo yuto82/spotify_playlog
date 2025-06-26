@@ -28,3 +28,5 @@ class Config:
     SPOTIFY_RAW_DATA_PATH = SRC_DIR / "data" / "spotify_raw_data.json"
 
     DATABASE_URL = os.getenv("DATABASE_URL")
+
+    TABLE_NAME = "spotify_playlog"
