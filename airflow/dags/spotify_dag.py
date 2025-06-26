@@ -1,10 +1,8 @@
-from datetime import datetime
 from datetime import timedelta
+from datetime import datetime
 from airflow import DAG
-from airflow.models import Variable
-from airflow.hooks.base_hook import BaseHook    
-from airflow.hooks.mysql_hook import MySqlHook
 from airflow.operators.python_operator import PythonOperator
+
 
 default_args = {
     'owner': 'airflow',
@@ -12,6 +10,7 @@ default_args = {
     'start_date': datetime(2024, 5, 29),
     'retries': 1,
     'retry_delay': timedelta(minutes=60),
+
 }
 with DAG(
     'spotify_dag',
@@ -21,17 +20,18 @@ with DAG(
 
     exchange = PythonOperator(
         task_id = 'exchange_token',
-        python_callable = exchange_token
+        python_callable = _exchange_token
     )
 
     refresh = PythonOperator(
         task_id = 'refresh_token',
-        python_callable = refresh_token
+        python_callable = _refresh_token
     )
 
     get_songs = PythonOperator(
         task_id= 'get_songs',
-        python_callable = get_recently_played_tracks
+        python_callable = _get_recently_played_tracks
     )
 
+# Dependancies 
 exchange >> refresh >> get_songs
