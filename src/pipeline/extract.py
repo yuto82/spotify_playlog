@@ -157,7 +157,7 @@ def save_recently_played_tracks(data: Dict[str, Any], path: Path) -> None:
     except (OSError, IOError) as error:
         raise RuntimeError(f"Failed to save refresh token to {path}") from error
 
-if __name__ == "__main__":
+def extract():
     refresh_token: str = load_refresh_token(Config.REFRESH_TOKEN_PATH)
     token_payload: TokenRequestPayload = build_token_request_payload(Config.CLIENT_ID, 
                                                                      Config.CLIENT_SECRET,
@@ -167,3 +167,6 @@ if __name__ == "__main__":
     spotify_data: Dict[str, Any] = get_recently_played_tracks(Config.unix_timestamp(), data_payload)
 
     save_recently_played_tracks(spotify_data, Config.SPOTIFY_RAW_DATA_PATH)
+
+if __name__ == "__main__":
+    extract()

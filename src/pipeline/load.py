@@ -3,7 +3,8 @@ import pandas as pd
 from typing import Union
 from pathlib import Path
 from settings.config import Config
-from sqlalchemy import create_engine, text, Engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Engine
 
 def get_database_engine() -> Engine:
     """
@@ -49,6 +50,9 @@ def load_data_to_database(data_path: Union[str, Path], table_name: str, engine: 
     except Exception as error:
         raise RuntimeError(f"Failed to load data into the database: {error}") from error
 
-if __name__ == "__main__":
+def load():
     engine = get_database_engine()
     load_data_to_database(Config.SPOTIFY_TRANSFORMED_DATA_PATH, Config.TABLE_NAME, engine)
+
+if __name__ == "__main__":
+    load()

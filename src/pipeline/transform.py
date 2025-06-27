@@ -98,6 +98,9 @@ def transform_track(data: dict[str, Any], transformed_data_path: Path) -> pd.Dat
 
     return df    
 
-if __name__ == "__main__":
+def transform():
     data: dict[str, Any] = load_data(Config.SPOTIFY_RAW_DATA_PATH)
     transform_track(data, Config.SPOTIFY_TRANSFORMED_DATA_PATH)
+
+if __name__ == "__main__":
+    transform()

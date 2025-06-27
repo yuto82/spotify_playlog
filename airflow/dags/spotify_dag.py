@@ -1,37 +1,44 @@
-from datetime import timedelta
-from datetime import datetime
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
+from datetime import timedelta, datetime
+import sys
 
+sys.path.append('/opt/airflow/src')
+
+from pipeline.extract import extract
+from pipeline.transform import transform
+from pipeline.load import load
 
 default_args = {
     'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2024, 5, 29),
-    'retries': 1,
+    'depends_on_past': True,
+    'start_date': datetime(2025, 6, 27),
+    'retries': 2,
     'retry_delay': timedelta(minutes=60),
-
 }
+
 with DAG(
-    'spotify_dag',
+    dag_id='spotify_playlog',
     default_args=default_args,
-    schedule_interval='10 4 * * *',  # This DAG will run at 10 min past mindnight (12:10)EST, The rason I have build 4:10 because my airflow follows UTC timestamp
-):
+    description='Pipeline to retrieve recently played tracks from Spotify.',
+    schedule_interval='0 16 * * *',
+    catchup=False,
+    tags=['spotify_playlog']
 
-    exchange = PythonOperator(
-        task_id = 'exchange_token',
-        python_callable = _exchange_token
+) as dag:
+    extract_task = PythonOperator(
+        task_id='extract_data',
+        python_callable=extract
     )
 
-    refresh = PythonOperator(
-        task_id = 'refresh_token',
-        python_callable = _refresh_token
+    transform_task = PythonOperator(
+        task_id='transform_data',
+        python_callable=transform
     )
 
-    get_songs = PythonOperator(
-        task_id= 'get_songs',
-        python_callable = _get_recently_played_tracks
+    load_task = PythonOperator(
+        task_id='load_data',
+        python_callable=load
     )
 
-# Dependancies 
-exchange >> refresh >> get_songs
+    extract_task >> transform_task >> load_task

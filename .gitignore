@@ -12,3 +12,4 @@ dist/
 *.cfg
 refresh_token.json
 *.egg-info/
+airflow/logs
