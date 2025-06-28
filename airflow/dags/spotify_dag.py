@@ -21,7 +21,7 @@ with DAG(
     dag_id='spotify_playlog',
     default_args=default_args,
     description='Pipeline to retrieve recently played tracks from Spotify.',
-    schedule_interval='0 16 * * *',
+    schedule='0 16 * * *',
     catchup=False,
     tags=['spotify_playlog']
 

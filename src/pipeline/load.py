@@ -44,7 +44,7 @@ def load_data_to_database(data_path: Union[str, Path], table_name: str, engine: 
     """
     try:
         df = pd.read_csv(data_path)
-        df.to_sql(table_name, engine, if_exists='replace', index=False)
+        df.to_sql(table_name, engine, if_exists='append', index=False)
         engine.dispose()
         print(f"Data successfully loaded into table '{table_name}'.")
     except Exception as error:
