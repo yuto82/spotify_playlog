@@ -30,3 +30,5 @@ class Config:
     DATABASE_URL = os.getenv("DATABASE_URL")
 
     TABLE_NAME = "spotify_playlog"
+
+    LOG_PATH = SRC_DIR / "data" / "logs" / "spotify_playlog.log"

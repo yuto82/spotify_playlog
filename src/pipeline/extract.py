@@ -5,6 +5,9 @@ from pathlib import Path
 from typing import Dict, Any
 from dataclasses import dataclass
 from settings.config import Config
+from settings.logger import setup_logger
+
+logger = setup_logger(Config.LOG_PATH)
 
 @dataclass
 class TokenRequestPayload:
@@ -35,9 +38,12 @@ def load_refresh_token(token_path: str) -> str:
         RuntimeError: If the file is not found or the 'refresh_token' key is missing.
     """
     try:
+        logger.debug(f"Loading refresh token from {token_path}")
         with open(token_path, encoding="utf-8") as file:
             refresh_token = json.load(file)["refresh_token"]
+        logger.info("Refresh token loaded successfully.")
     except (FileNotFoundError, KeyError) as error:
+        logger.error(f"Failed to load refresh token from {token_path}: {error}")
         raise RuntimeError(f"Failed to load refresh token from {token_path}") from error
 
     return refresh_token
@@ -54,6 +60,7 @@ def build_token_request_payload(client_id: str, client_secret: str, refresh_toke
     Returns:
         TokenRequestPayload: A dataclass containing the headers and form data for the token refresh request.
     """
+    logger.debug("Building token request payload.")
     auth_header = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
 
     headers: dict[str, str] = {
@@ -82,16 +89,20 @@ def refresh_access_token(payload: TokenRequestPayload) -> str:
         RuntimeError: If the HTTP request fails or returns a non-success status.
         ValueError: If the response does not contain an access token.
     """
+    logger.info("Requesting new access token from Spotify.")
     url = "https://accounts.spotify.com/api/token"
 
     try:
         response = requests.post(url, headers = payload.headers, data = payload.data)
         response.raise_for_status()
+        logger.info("Access token refreshed successfully.")
     except requests.RequestException as error:
+        logger.error(f"Failed to refresh access token: {error}")
         raise RuntimeError("Failed to refresh access token from Spotify.") from error
     
     new_access_token = response.json()["access_token"]
     if not new_access_token:
+        logger.error("No access token found in Spotify's response.")
         raise ValueError("No access token found in the response from Spotify.")
 
     return new_access_token
@@ -106,6 +117,7 @@ def build_data_request_payload(access_token: str) -> DataRequestPayload:
     Returns:
         DataRequestPayload: A dataclass containing the required HTTP headers.
     """
+    logger.debug("Building data request payload.")
     headers: dict[str, str] = {
         "Authorization": f"Bearer {access_token}"
     }
@@ -127,14 +139,18 @@ def get_recently_played_tracks(yesterday_unix_timestamp: str, payload: DataReque
     Raises:
         RuntimeError: If the HTTP request fails or returns an error status.
     """
+    logger.info("Fetching recently played tracks from Spotify.")
     url = f"https://api.spotify.com/v1/me/player/recently-played?limit=50&after={yesterday_unix_timestamp}"
 
     try:
         response = requests.get(url, headers = payload.headers)
         response.raise_for_status()
+        logger.info("Recently played tracks fetched successfully.")
     except requests.HTTPError as http_err:
+        logger.error(f"Spotify API returned an error: {http_err}")
         raise RuntimeError(f"Spotify API returned an error: {http_err}") from http_err
     except requests.RequestException as req_err:
+        logger.error(f"Request failed: {req_err}")
         raise RuntimeError(f"Request failed: {req_err}") from req_err
     
     return response.json()
@@ -150,23 +166,34 @@ def save_recently_played_tracks(data: Dict[str, Any], path: Path) -> None:
     Raises:
         RuntimeError: If saving the file fails due to I/O errors.
     """
+    logger.info(f"Saving recently played tracks to {path}")
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w", encoding="utf-8") as file:
             json.dump(data, file, indent=4)
+        logger.info("Tracks saved successfully.")
     except (OSError, IOError) as error:
+        logger.error(f"Failed to save refresh token to {path}: {error}")
         raise RuntimeError(f"Failed to save refresh token to {path}") from error
 
 def extract():
-    refresh_token: str = load_refresh_token(Config.REFRESH_TOKEN_PATH)
-    token_payload: TokenRequestPayload = build_token_request_payload(Config.CLIENT_ID, 
-                                                                     Config.CLIENT_SECRET,
-                                                                     refresh_token)
-    new_access_token: str = refresh_access_token(token_payload)
-    data_payload: DataRequestPayload = build_data_request_payload(new_access_token)
-    spotify_data: Dict[str, Any] = get_recently_played_tracks(Config.unix_timestamp(), data_payload)
+    logger.info("Starting Spotify ETL extract process.")
+    try:
+        refresh_token = load_refresh_token(Config.REFRESH_TOKEN_PATH)
 
-    save_recently_played_tracks(spotify_data, Config.SPOTIFY_RAW_DATA_PATH)
+        token_payload = build_token_request_payload(Config.CLIENT_ID, 
+                                                    Config.CLIENT_SECRET, 
+                                                    refresh_token)
+        
+        new_access_token = refresh_access_token(token_payload)
+
+        data_payload = build_data_request_payload(new_access_token)
+        spotify_data = get_recently_played_tracks(Config.unix_timestamp(), data_payload)
+        
+        save_recently_played_tracks(spotify_data, Config.SPOTIFY_RAW_DATA_PATH)
+        logger.info("Spotify ETL extract process completed successfully.")
+    except Exception as e:
+        logger.critical(f"ETL extract failed: {e}", exc_info=True)
 
 if __name__ == "__main__":
     extract()
