@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from settings.config import Config
 from settings.logger import setup_logger
 
-logger = setup_logger(Config.LOG_PATH)
+logger = setup_logger(Config.LOGGER_NAME, Config.LOGGER_PATH)
 
 @dataclass
 class TokenRequestPayload:
@@ -38,7 +38,7 @@ def load_refresh_token(token_path: str) -> str:
         RuntimeError: If the file is not found or the 'refresh_token' key is missing.
     """
     try:
-        logger.debug(f"Loading refresh token from {token_path}")
+        logger.debug(f"Loading refresh token.")
         with open(token_path, encoding="utf-8") as file:
             refresh_token = json.load(file)["refresh_token"]
         logger.info("Refresh token loaded successfully.")
@@ -118,6 +118,7 @@ def build_data_request_payload(access_token: str) -> DataRequestPayload:
         DataRequestPayload: A dataclass containing the required HTTP headers.
     """
     logger.debug("Building data request payload.")
+
     headers: dict[str, str] = {
         "Authorization": f"Bearer {access_token}"
     }
@@ -166,7 +167,7 @@ def save_recently_played_tracks(data: Dict[str, Any], path: Path) -> None:
     Raises:
         RuntimeError: If saving the file fails due to I/O errors.
     """
-    logger.info(f"Saving recently played tracks to {path}")
+    logger.info(f"Saving recently played tracks.")
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w", encoding="utf-8") as file:
@@ -192,8 +193,8 @@ def extract():
         
         save_recently_played_tracks(spotify_data, Config.SPOTIFY_RAW_DATA_PATH)
         logger.info("Spotify ETL extract process completed successfully.")
-    except Exception as e:
-        logger.critical(f"ETL extract failed: {e}", exc_info=True)
+    except Exception as error:
+        logger.critical(f"ETL extract failed", exc_info=True)
 
 if __name__ == "__main__":
     extract()

@@ -31,4 +31,5 @@ class Config:
 
     TABLE_NAME = "spotify_playlog"
 
-    LOG_PATH = SRC_DIR / "data" / "logs" / "spotify_playlog.log"
+    LOGGER_PATH = SRC_DIR / "data" / "logs" / "spotify_playlog.log"
+    LOGGER_NAME = "playlog"
