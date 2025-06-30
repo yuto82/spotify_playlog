@@ -1,4 +1,3 @@
-# log_config.py
 import sys
 import logging
 from pathlib import Path
@@ -6,7 +5,7 @@ from colorlog import ColoredFormatter
 
 def setup_logger(log_name: str, log_path: Path) -> logging.Logger:
     logger = logging.getLogger(log_name)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     logger.propagate = False
 
@@ -32,8 +31,10 @@ def setup_logger(log_name: str, log_path: Path) -> logging.Logger:
             "%Y-%m-%d %H:%M:%S"
         )
 
+        log_path.parent.mkdir(parents=True, exist_ok=True)
         file_handler = logging.FileHandler(log_path, encoding="utf-8")
         file_handler.setFormatter(file_formatter)
+        
         logger.addHandler(file_handler)
 
     return logger
