@@ -3,6 +3,9 @@ import pandas as pd
 from pathlib import Path
 from typing import Any, Dict
 from settings.config import Config
+from settings.logger import setup_logger
+
+logger = setup_logger(Config.LOGGER_NAME, Config.LOGGER_PATH)
 
 def load_data(raw_data_path: Path) -> dict[str, Any]:
     """
@@ -18,14 +21,19 @@ def load_data(raw_data_path: Path) -> dict[str, Any]:
         FileNotFoundError: If the file at raw_data_path does not exist.
         json.JSONDecodeError: If the file content is not valid JSON.
     """
+    logger.debug(f"Starting to load data path from {raw_data_path}.")
     if not raw_data_path.exists():
-        raise FileNotFoundError(f"Input file not found: {raw_data_path}")
-    
+        logger.error(f"Data path not found: {raw_data_path}.")
+        raise
+
+    logger.info("Loading JSON data.")
     try:
         with open(raw_data_path, "r", encoding="utf-8") as file:
             data = json.load(file)
+        logger.info("Successfully loaded JSON data.")
     except json.JSONDecodeError as error:
-        raise ValueError(f"Invalid JSON file: {raw_data_path}") from error
+        logger.error(f"Invalid JSON file: {raw_data_path}: {error}.")
+        raise
 
     return data
 
@@ -48,6 +56,7 @@ def parse_track(item: Dict[str, Any]) -> Dict[str, Any]:
             - track_popularity (int | None): Popularity score of the track.
             - played_at (str | None): ISO timestamp when the track was played.
     """
+
     track = item.get("track", {})
     album = track.get("album", {})
     artist = album.get("artists", [{}])[0]
@@ -77,9 +86,11 @@ def transform_track(data: dict[str, Any], transformed_data_path: Path) -> pd.Dat
     Returns:
         pd.DataFrame: The cleaned and transformed DataFrame.
     """
+    logger.debug("Starting transformation of raw Spotify data.")
     items = data.get("items", [])
     if not items:
-        raise ValueError("No items found in the input data")
+        logger.error("No items found in the input data.")
+        raise
     
     rows = [parse_track(item) for item in items]
     df = pd.DataFrame(rows)
@@ -96,11 +107,17 @@ def transform_track(data: dict[str, Any], transformed_data_path: Path) -> pd.Dat
     df = df.drop_duplicates(subset="track_id", keep="first")
     df.to_csv(transformed_data_path, index=False)
 
-    return df    
+    return df
 
 def transform():
-    data: dict[str, Any] = load_data(Config.SPOTIFY_RAW_DATA_PATH)
-    transform_track(data, Config.SPOTIFY_TRANSFORMED_DATA_PATH)
+    logger.info("Starting data transformation process.")
+    try:
+        data: dict[str, Any] = load_data(Config.SPOTIFY_RAW_DATA_PATH)
+        transform_track(data, Config.SPOTIFY_TRANSFORMED_DATA_PATH)
+        logger.info("Data transformation process completed successfully.")
+    except Exception as error:
+        logger.error(f"Data transformation failed: {error}")
+        raise
 
 if __name__ == "__main__":
     transform()
