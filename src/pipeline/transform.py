@@ -26,13 +26,12 @@ def load_data(raw_data_path: Path) -> dict[str, Any]:
         logger.error(f"Data path not found: {raw_data_path}.")
         raise
 
-    logger.info("Loading JSON data.")
     try:
         with open(raw_data_path, "r", encoding="utf-8") as file:
             data = json.load(file)
-        logger.info("Successfully loaded JSON data.")
+        logger.info(f"Successfully loaded JSON data from {raw_data_path}.")
     except json.JSONDecodeError as error:
-        logger.error(f"Invalid JSON file: {raw_data_path}: {error}.")
+        logger.error(f"Invalid JSON in file {raw_data_path}: {error}")
         raise
 
     return data
@@ -56,20 +55,30 @@ def parse_track(item: Dict[str, Any]) -> Dict[str, Any]:
             - track_popularity (int | None): Popularity score of the track.
             - played_at (str | None): ISO timestamp when the track was played.
     """
+    try:
+        logger.debug(f"Parsing track item with played_at={item.get('played_at')}.")
 
-    track = item.get("track", {})
-    album = track.get("album", {})
-    artist = album.get("artists", [{}])[0]
+        track = item.get("track", {})
+        album = track.get("album", {})
+        artist = album.get("artists", [{}])[0]
 
-    return {
-        "artist_name": artist.get("name"),
-        "artist_id": artist.get("id"),
-        "song_name": track.get("name"),
-        "track_id": track.get("id"),
-        "duration_ms": track.get("duration_ms"),
-        "track_popularity": track.get("popularity"),
-        "played_at": item.get("played_at")
-    }
+        parsed = {
+            "artist_name": artist.get("name"),
+            "artist_id": artist.get("id"),
+            "song_name": track.get("name"),
+            "track_id": track.get("id"),
+            "duration_ms": track.get("duration_ms"),
+            "track_popularity": track.get("popularity"),
+            "played_at": item.get("played_at")
+        }
+
+        logger.debug(f"Parsed track: {parsed}")
+        return parsed
+
+    except Exception as error:
+        logger.error(f"Error parsing track item: {error}. Full item: {item}")
+        raise
+    
 
 def transform_track(data: dict[str, Any], transformed_data_path: Path) -> pd.DataFrame:
     """
@@ -90,21 +99,30 @@ def transform_track(data: dict[str, Any], transformed_data_path: Path) -> pd.Dat
     items = data.get("items", [])
     if not items:
         logger.error("No items found in the input data.")
-        raise
-    
+        raise ValueError("No items found in the input data.")
+
     rows = [parse_track(item) for item in items]
     df = pd.DataFrame(rows)
 
-    df = df[["artist_name", "artist_id", "song_name", "track_id", "duration_ms", "track_popularity", "played_at"]]
-    df.columns = ["artist_name", "artist_id", "song_name", "track_id", "duration", "popularity", "played_at"]
+    try:
+        logger.debug("Renaming and reordering columns.")
+        df = df[["artist_name", "artist_id", "song_name", "track_id", "duration_ms", "track_popularity", "played_at"]]
+        df.columns = ["artist_name", "artist_id", "song_name", "track_id", "duration", "popularity", "played_at"]
 
-    df["played_at"] = pd.to_datetime(df["played_at"], errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%S")
+        logger.debug("Converting played_at to datetime.")
+        df["played_at"] = pd.to_datetime(df["played_at"], errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%S")
 
-    df["duration"] = pd.to_numeric(df["duration"], errors="coerce").apply(
-        lambda ms: f"{int(ms // 60000)}:{int((ms % 60000) // 1000):02}" if pd.notnull(ms) else None
-    )
+        logger.debug("Formatting duration in mm:ss.")
+        df["duration"] = pd.to_numeric(df["duration"], errors="coerce").apply(
+            lambda ms: f"{int(ms // 60000)}:{int((ms % 60000) // 1000):02}" if pd.notnull(ms) else None)
+        
+        logger.debug("Dropping duplicates from tracks.")
+        df = df.drop_duplicates(subset="track_id", keep="first")
 
-    df = df.drop_duplicates(subset="track_id", keep="first")
+    except Exception as error:
+        logger.error(f"Error while transforming DataFrame: {error}")
+        raise
+    
     df.to_csv(transformed_data_path, index=False)
 
     return df
@@ -116,7 +134,7 @@ def transform():
         transform_track(data, Config.SPOTIFY_TRANSFORMED_DATA_PATH)
         logger.info("Data transformation process completed successfully.")
     except Exception as error:
-        logger.error(f"Data transformation failed: {error}")
+        logger.critical(f"ETL transformation failed: {error}")
         raise
 
 if __name__ == "__main__":
