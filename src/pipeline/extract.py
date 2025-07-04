@@ -205,7 +205,7 @@ def extract():
         save_recently_played_tracks(spotify_data, Config.SPOTIFY_RAW_DATA_PATH)
         logger.info("Spotify ETL extract process completed successfully.")
     except Exception as error:
-        logger.critical(f"ETL extract failed: {error}", exc_info=True)
+        logger.critical(f"ETL extract failed: {error}.", exc_info=True)
         raise
 
 if __name__ == "__main__":
