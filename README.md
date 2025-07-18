@@ -55,3 +55,24 @@ A defined workflow orchestrates this process, allowing the pipeline to be schedu
   - Apache Airflow 3.0.1
 - **Data Sources:**
   - [Spotify API Documentation](https://developer.spotify.com/documentation/web-api)
+
+## Pipeline Breakdown
+This project implements an ETL (Extract, Transform, Load) pipeline for collecting, transforming, and storing User's listening data from the Spotify API. The pipeline includes the following stages:
+
+### Task 1: Initial authorization
+- **Modules involved:** `auth.py`
+- **Objective:** Initiate the Spotify OAuth 2.0 flow to obtain User's authorization for accessing listening data.
+- **Main steps:**
+  - **Build Authorization URL**: 
+  <br> The function `build_authentication_url()` constructs a Spotify authorization URL using client credentials, requested scopes, and a redirect URI.
+  - **User Consent Flow:**
+  <br> The constructed URL is opened in the default web browser using the `open_authentication_url()` function, prompting the user to log in and approve access.
+  - **Manual Step**:
+  <br> This authorization code must be manually copied from the redirect URL (e.g., `...?code=...`) and used in the next step of the pipeline to request access and refresh tokens.
+- **Expected Output:**
+  - A one-time authorization code, valid for 10 minutes.
+  - Though not used directly in the pipeline, it is essential during initial setup to obtain long-term access and refresh tokens.
+
+
+
+
