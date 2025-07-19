@@ -86,3 +86,21 @@ This project implements an ETL (Extract, Transform, Load) pipeline for collectin
 - **Expected Output:**
   - A valid `access token` for immediate use and a `refresh_token` to refresh it later.
   - The refresh token is stored securely in the filesystem, enabling long-term API access without repeating manual authorization.
+
+### Task 3: Extraction
+- **Modules involved:** `extract.py`
+- **Objective:** Extract recently played track data from the Spotify Web API using a valid access token.
+- **Main steps:**
+  - **Load Refresh Token:**
+  <br> Function `load_refresh_token()` reads the previously saved refresh token from local storage.
+  - **Request New Access Token:**
+  <br> These functions `build_token_request_payload()` and `refresh_access_token()` are used to build the token payload and obtain a new short-lived access token via the Spotify API.
+  - **Build Data Request Headers:**
+  <br> `build_data_request_payload()` prepares authorization headers using the new access token.
+  - **Request User's Playback Data:**
+  <br> The `get_recently_played_tracks()` function queries the `/v1/me/player/recently-played` endpoint with a Unix timestamp filter, retrieving up to 50 recent tracks.
+  - **Persist Raw Data:**
+  <br> The result is saved locally using `save_recently_played_tracks()` as a raw JSON file for downstream processing.
+- **Expected Output:**
+  - A JSON file containing track metadata and playback history after the defined timestamp.
+  - Includes information such as track name, artist, album, playback timestamp, and additional metadata from Spotify.
