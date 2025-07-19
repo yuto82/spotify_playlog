@@ -68,11 +68,21 @@ This project implements an ETL (Extract, Transform, Load) pipeline for collectin
   - **User Consent Flow:**
   <br> The constructed URL is opened in the default web browser using the `open_authentication_url()` function, prompting the user to log in and approve access.
   - **Manual Step**:
-  <br> This authorization code must be manually copied from the redirect URL (e.g., `...?code=...`) and used in the next step of the pipeline to request access and refresh tokens.
+  <br> This authorization code can be manually copied from the redirect URL (e.g., `...?code=...`) and used in the next step of the pipeline to request tokens.
 - **Expected Output:**
   - A one-time authorization code, valid for 10 minutes.
-  - Though not used directly in the pipeline, it is essential during initial setup to obtain long-term access and refresh tokens.
+  - Though not used directly in the pipeline, it is essential during initial setup to obtain long-term refresh tokens.
 
-
-
-
+### Task 2: Token Request
+- **Modules involved:** `token.py`
+- **Objective:** Exchange the authorization code for an access token and a refresh token, then persist the refresh token for future use.
+- **Main steps:**
+  - **Build Token Request Payload:**
+  <br> The `build_tokens_request_payload()` function prepares the required headers and data, including client credentials, redirect URI, and authorization code, for the token exchange request.
+  - **Exchange Code for Tokens:**
+  <br> Here, the function `get_refresh_token()` sends a POST request to Spotify’s token endpoint and parses the response to retrieve access and refresh token.
+  - **Store Token:**
+  <br> The `save_refresh_token()` function saves the refresh token to a local JSON file for reuse in future sessions.
+- **Expected Output:**
+  - A valid `access token` for immediate use and a `refresh_token` to refresh it later.
+  - The refresh token is stored securely in the filesystem, enabling long-term API access without repeating manual authorization.
