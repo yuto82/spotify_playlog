@@ -114,9 +114,21 @@ This project implements an ETL (Extract, Transform, Load) pipeline for collectin
   - **Parse Track Data:**
   <br> The `parse_track()` function extracts key fields from each track record, including: `artist_name` (name of the performer), `track_id` (unique identifier of the track), `track_name` (title of the track), `played_at` (ISO-formatted playback timestamp), and `duration_ms` (track length in milliseconds, converted to a mm:ss format).
   - **Transform and Clean:**
-  <br> Function `transform_track()` iterates over all track items and parses them using `parse_track()`. Converts the resulting list to a DataFrame. Applies final formatting: Converts `duration_ms` to human-readable format. Formats `played_at` to %Y-%m-%d %H:%M:%S. Drops duplicate entries based on `track_id`.
+  <br> Function `transform_track()` iterates over all track items. Converts the resulting list to a data frame. Applies final formatting: Converts `duration_ms` to human-readable format. Formats `played_at` to %Y-%m-%d %H:%M:%S. Drops duplicate entries based on `track_id`.
   - **Save Cleaned Data:**
-  <br> The cleaned DataFrame is saved to a CSV file.
+  <br> The cleaned data frame is saved to a CSV file.
 - **Expected Output:**
   - A CSV file containing cleaned and deduplicated playback.
   - This output is used in downstream loading and analytics tasks.
+
+### Task 5: Load Transformed Data into Database
+- **Modules involved:** `load.py`
+- **Objective:** Load the transformed data from a CSV file into a relational database table.
+- **Main steps:**
+  - **Establish Database Connection:**
+  <br> The function `get_database_engine()` creates an SQLAlchemy engine using credentials and verifies connectivity via a test query.
+  - **Load Data into Table:**
+  <br> Here, the function `load_data_to_database()` reads the transformed CSV file and appends its contents to the specified table. After successful loading, the engine is disposed to free up resources.
+- **Expected Output:**
+  - The transformed dataset is appended to the target database table.
+  - Logs are generated to trace the load process and catch any errors, ensuring that data ingestion into the analytics database is successful.
