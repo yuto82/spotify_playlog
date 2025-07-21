@@ -132,3 +132,19 @@ This project implements an ETL (Extract, Transform, Load) pipeline for collectin
 - **Expected Output:**
   - The transformed dataset is appended to the target database table.
   - Logs are generated to trace the load process and catch any errors, ensuring that data ingestion into the analytics database is successful.
+
+### Task 6: Orchestrate Pipeline
+- **Modules involved:** `spotify_dag.py`
+- **Objective:** Define and schedule an automated workflow to extract, transform, and load Spotify data using Apache Airflow.
+- **Main steps:**
+  - **Configure DAG:**
+  <br> Set default arguments including owner, start date, retry policy (`retries=2`, `retry_delay=60min`) and schedule (`daily at 16:00`, i.e. `0 16 * * *`).
+  - **Import Pipeline Functions:**
+  <br> Import the `extract.py`, `transform.py`, and `load.py` functions from their respective modules in the pipeline package.
+  - **Define Tasks:**
+  <br> The function `extract_data` task calls the `extract()` function to retrieve raw Spotify data. The function `transform_data` task calls the `transform()` function to clean and format the data. The function `load_data` task calls the `load()` function to store the data in the database.
+  - **Set Task Dependencies:**
+  <br> The tasks are chained in the following order: `extract_data` → `transform_data` → `load_data`.
+- **Expected Output:**
+  - The ETL pipeline runs daily at the defined schedule, executing all stages in order.
+  - Logs and retry mechanisms help ensure pipeline reliability and traceability.
