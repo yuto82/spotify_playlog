@@ -84,7 +84,7 @@ This project implements an ETL (Extract, Transform, Load) pipeline for collectin
   - **Store Token:**
   <br> The `save_refresh_token()` function saves the refresh token to a local JSON file for reuse in future sessions.
 - **Expected Output:**
-  - A valid `access token` for immediate use and a `refresh_token` to refresh it later.
+  - A valid access token for immediate use and a refresh token to refresh it later.
   - The refresh token is stored securely in the filesystem, enabling long-term API access without repeating manual authorization.
 
 ### Task 3: Extraction
@@ -96,7 +96,7 @@ This project implements an ETL (Extract, Transform, Load) pipeline for collectin
   - **Request New Access Token:**
   <br> These functions `build_token_request_payload()` and `refresh_access_token()` are used to build the token payload and obtain a new short-lived access token via the Spotify API.
   - **Build Data Request Headers:**
-  <br> `build_data_request_payload()` prepares authorization headers using the new access token.
+  <br> Function `build_data_request_payload()` prepares authorization headers using the new access token.
   - **Request User's Playback Data:**
   <br> The `get_recently_played_tracks()` function queries the `/v1/me/player/recently-played` endpoint with a Unix timestamp filter, retrieving up to 50 recent tracks.
   - **Persist Raw Data:**
@@ -104,3 +104,19 @@ This project implements an ETL (Extract, Transform, Load) pipeline for collectin
 - **Expected Output:**
   - A JSON file containing track metadata and playback history after the defined timestamp.
   - Includes information such as track name, artist, album, playback timestamp, and additional metadata from Spotify.
+
+### Task 4: Transform Data
+- **Modules involved:** `transform.py`
+- **Objective:** Сlean, transform and reshape the raw data into a structured, cleaned analysis-ready tabular format.
+- **Main steps:**
+  - **Load Raw Data:**
+  <br> Function `load_data()` loads the previously saved raw JSON file.
+  - **Parse Track Data:**
+  <br> The `parse_track()` function extracts key fields from each track record, including: `artist_name` (name of the performer), `track_id` (unique identifier of the track), `track_name` (title of the track), `played_at` (ISO-formatted playback timestamp), and `duration_ms` (track length in milliseconds, converted to a mm:ss format).
+  - **Transform and Clean:**
+  <br> Function `transform_track()` iterates over all track items and parses them using `parse_track()`. Converts the resulting list to a DataFrame. Applies final formatting: Converts `duration_ms` to human-readable format. Formats `played_at` to %Y-%m-%d %H:%M:%S. Drops duplicate entries based on `track_id`.
+  - **Save Cleaned Data:**
+  <br> The cleaned DataFrame is saved to a CSV file.
+- **Expected Output:**
+  - A CSV file containing cleaned and deduplicated playback.
+  - This output is used in downstream loading and analytics tasks.
